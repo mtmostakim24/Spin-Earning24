@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>স্পিন করে ডলার জিতুন</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f0f0f5;
+      text-align: center;
+      padding: 20px;
+    }
+    h2 {
+      color: #333;
+    }
+    #pointer {
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 40px solid green;
+      margin: 20px auto;
+    }
+    #wheelWrapper {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 0 auto;
+    }
+    #wheelCanvas {
+      border: 8px solid red;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 4s ease-out;
+    }
+    button {
+      background: crimson;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      font-size: 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    #balanceBox, #withdrawBox {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    input {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 80%;
+    }
+    #referSection {
+      display: none;
+      margin-top: 20px;
+    }
+    .social-icons img {
+      width: 40px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    #proofBtn {
+      margin-top: 30px;
+      background: #0088cc;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h2>স্পিন করে ডলার জিতে নিন!</h2>
+<div id="pointer"></div>
+<div id="wheelWrapper">
+  <canvas id="wheelCanvas" width="300" height="300"></canvas>
+</div>
+<button onclick="spinWheel()">স্পিন করুন</button>
+
+<div id="balanceBox">
+  মোট ডলার: $<span id="balance">0.0000</span><br>
+  উত্তোলনের জন্য কমপক্ষে $10 ডলার থাকতে হবে!
+</div>
+
+<div id="withdrawBox">
+  <h3>উত্তোলন করুন</h3>
+  <input type="text" id="name" placeholder="আপনার নাম"><br>
+  <input type="text" id="phone" placeholder="মোবাইল নাম্বার (বিকাশ/নগদ)"><br>
+  <input type="number" id="amount" placeholder="উত্তোলনের পরিমাণ"><br>
+  <button onclick="checkWithdraw()">উত্তোলন করুন</button>
+</div>
+
+<div id="referSection">
+  <h3>পেমেন্ট নিতে হলে ১০ জন বন্ধুকে শেয়ার করুন</h3>
+  <p>আপনার রেফার লিংক:</p>
+  <input type="text" id="refLink" readonly>
+  <button onclick="copyLink()">শেয়ার করুন</button>
+  <div class="social-icons">
+    <a id="wa" target="_blank"><img src="https://img.icons8.com/color/48/whatsapp.png"/></a>
+    <a id="ms" target="_blank"><img src="https://img.icons8.com/color/48/facebook-messenger.png"/></a>
+    <a id="tg" target="_blank"><img src="https://img.icons8.com/color/48/telegram-app.png"/></a>
+  </div>
+</div>
+
+<!-- Payment Proof Button -->
+<a href="https://t.me/Spin_Earning24_VercelApp" target="_blank">
+  <button id="proofBtn">পেমেন্ট প্রুফ দেখুন</button>
+</a>
+
+<script>
+  const canvas = document.getElementById("wheelCanvas");
+  const ctx = canvas.getContext("2d");
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const radius = canvas.width / 2;
+
+  const segments = ["$0.01", "$0.02", "$0.03", "$0.05", "$0.10", "$0.00", "$0.08", "$0.30"];
+  const values = [0.01, 0.02, 0.03, 0.05, 0.10, 0.00, 0.08, 0.30];
+  const colors = ["#f44336", "#e91e63", "#9c27b0", "#2196f3", "#4caf50", "#8bc34a", "#ffc107", "#ff9800"];
+
+  let balance = parseFloat(localStorage.getItem("balance")) || 0.0;
+  document.getElementById("balance").innerText = balance.toFixed(4);
+
+  let rotation = 0;
+
+  function drawWheel() {
+    const arcSize = (2 * Math.PI) / segments.length;
+    for (let i = 0; i < segments.length; i++) {
+      const startAngle = i * arcSize;
+      const endAngle = startAngle + arcSize;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.fillStyle = colors[i];
+      ctx.fill();
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(startAngle + arcSize / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillText(segments[i], radius - 10, 5);
+      ctx.restore();
+    }
+  }
+
+  function spinWheel() {
+    const randomIndex = Math.floor(Math.random() * segments.length);
+    const anglePerSlice = 360 / segments.length;
+    const stopAngle = randomIndex * anglePerSlice + anglePerSlice / 2;
+    const spins = 5;
+    rotation += (spins * 360 + (360 - stopAngle));
+    canvas.style.transform = `rotate(${rotation}deg)`;
+
+    setTimeout(() => {
+      const amount = values[randomIndex];
+      balance += amount;
+      localStorage.setItem("balance", balance.toFixed(4));
+      document.getElementById("balance").innerText = balance.toFixed(4);
+      alert(`অভিনন্দন! আপনি পেয়েছেন ${segments[randomIndex]}`);
+      window.location.href = "https://www.profitableratecpm.com/mzze4b78n?key=e3998055e23a80c5cbffb7d80a88c74c";
+    }, 4000);
+  }
+
+  function checkWithdraw() {
+    if (balance >= 10) {
+      document.getElementById("referSection").style.display = "block";
+      const domain = window.location.origin;
+      const refLink = domain + "/?ref=" + Math.random().toString(36).substr(2, 8);
+      document.getElementById("refLink").value = refLink;
+      document.getElementById("wa").href = "https://wa.me/?text=" + encodeURIComponent(refLink);
+      document.getElementById("ms").href = "https://m.me/?link=" + encodeURIComponent(refLink);
+      document.getElementById("tg").href = "https://t.me/share/url?url=" + encodeURIComponent(refLink);
+    } else {
+      alert("উত্তোলনের জন্য আপনার ব্যালেন্স $10 এর কম!");
+    }
+  }
+
+  function copyLink() {
+    const refInput = document.getElementById("refLink");
+    refInput.select();
+    document.execCommand("copy");
+    alert("রেফার লিংক কপি হয়েছে!");
+  }
+
+  drawWheel();
+</script>
+
+<!-- Adsterra Script -->
+<script type='text/javascript' src='//pl26607619.profitableratecpm.com/89/be/eb/89beeb153f91b5aec28bb0d98b62029c.js'></script>
+
+</body>
+</html>
